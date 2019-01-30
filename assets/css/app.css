@@ -7,3 +7,33 @@
     text-align: center;
 }
 
+.restartButton {
+    float: right;
+}
+
+/*.gameBoard {*/
+/*    border: 1px solid gray;*/
+/*    padding:5px;*/
+/*}*/
+
+.row {
+    margin-bottom: 10px;
+}
+
+.tile {
+    padding:10px;
+    padding-top:20px;
+    padding-bottom:20px;
+    border: 1px solid black;
+    text-align: center;
+    min-height:67px;
+}
+
+.hover:hover {
+    cursor:pointer;
+}
+
+.matched {
+    color:white;
+    background-color:gray;
+}
