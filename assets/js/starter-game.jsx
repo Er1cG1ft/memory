@@ -12,8 +12,11 @@ class Starter extends React.Component {
     this.flipTile = this.flipTile.bind(this);
     this.state = {
       score: 0,
+      clicks: 0,
       lastClick: {row: -1, col: -1},
-      tiles: []
+      tiles: [],
+      flipping: false,
+      won: false
       };
     this.startGame();
   }
@@ -30,37 +33,50 @@ class Starter extends React.Component {
       this.state.tiles.push({name: tiles[i - 1], flipped: false, matched: false});
     }
     this.state.tiles = _.chunk(this.state.tiles, 4);
-    this.state.score = 0;
-    this.state.lastClick = {row: -1, col: -1};
-    this.setState({lastClick: this.state.lastClick, score: this.state.score});
-    console.log(this.state.tiles);
+    this.setState({lastClick: this.state.lastClick, score: 0, flipping: false, won: false, clicks: 0});
   }
   
   determineMatch(row, col) {
     if (this.state.lastClick.row > -1) {
+      let newScore = 0;
       if (this.state.tiles[row][col].name == this.state.tiles[this.state.lastClick.row][this.state.lastClick.col].name) {
         this.state.tiles[row][col].matched = true;
         this.state.tiles[this.state.lastClick.row][this.state.lastClick.col].matched = true;
-      } 
+        newScore = this.state.score + 10;
+      } else {
+        newScore = this.state.score - 1;
+      }
         this.state.tiles[row][col].flipped = false;
         this.state.tiles[this.state.lastClick.row][this.state.lastClick.col].flipped = false;
-      this.setState({tiles: this.state.tiles, lastClick: {row: -1, col: -1}});
+      this.setState({tiles: this.state.tiles, lastClick: {row: -1, col: -1}, flipping: false, score: newScore});
     } else {
-      this.setState({tiles: this.state.tiles, lastClick: {row: row, col: col}});
+      this.setState({tiles: this.state.tiles, lastClick: {row: row, col: col}, flipping: false});
     }
+    let won = true;
+    for (var i = 0; i < this.state.tiles.length; i++) {
+      for (var j = 0; j < this.state.tiles[i].length; j++) {
+        if (!this.state.tiles[i][j].matched) {
+          won = false;
+        }
+      }
+    }
+    this.setState({won: won});
   }
   
   flipTile(row, col) {
-    console.log(row + ", " + this.state.lastClick.row);
-    console.log(col + ", " + this.state.lastClick.col);
-    console.log("-----");
-    //only check if we have a different tile
     if (!(this.state.lastClick.row == row && this.state.lastClick.col == col)) {
-      this.state.tiles[row][col].flipped = !this.state.tiles[row][col].flipped;
-      this.setState({tiles: this.state.tiles, score: this.state.score + 1});
-      setTimeout(function() {
-        this.determineMatch(row, col);
-      }.bind(this), 1000);
+      if (!this.state.flipping) {
+        this.state.tiles[row][col].flipped = !this.state.tiles[row][col].flipped;
+        this.setState({tiles: this.state.tiles, clicks: this.state.clicks + 1});
+        this.setState({flipping: true});
+        if (this.state.lastClick.row == -1) {
+          this.determineMatch(row, col);
+        } else {
+          setTimeout(function() {
+            this.determineMatch(row, col);
+          }.bind(this), 1000);
+        }
+      }
     }
   }
 
@@ -83,9 +99,11 @@ class Starter extends React.Component {
         <div className="row">
           <div className="column">
             <h4>Score: {this.state.score}</h4>
+            <h4>Clicks: {this.state.clicks}</h4>
           </div>
           <div className="column">
             <button className="restartButton" onClick={this.restart.bind(this)}>Restart</button>
+            <Won won={this.state.won} />
           </div>
         </div>
           {result}
@@ -134,5 +152,13 @@ function Row(props) {
       );
   });
   return <div className="row">{result}</div>;
+}
+
+function Won(props) {
+  if (props.won) {
+    return (<h4 className="won">You Won!</h4>);
+  } else {
+    return null;
+  }
 }
 
